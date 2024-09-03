@@ -1,3 +1,5 @@
+'use server';
+
 import { searchSchema, SearchSchemaState } from '@/lib/schemas/search-news';
 import { NewsApiResponse } from '@/lib/types';
 
@@ -39,7 +41,6 @@ export async function SearchNews(
   };
 
   const parsed = searchSchema.safeParse(formData);
-  console.log(parsed);
 
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors, fields: parsed.data };
@@ -60,7 +61,7 @@ export async function SearchNews(
   if (parsed.data.language) params.append('language', parsed.data.language);
   if (parsed.data.sortBy) params.append('sortBy', parsed.data.sortBy);
 
-  params.append('apiKey', 'dace39bce94a4372a54e7b12918cbcc8');
+  params.append('apiKey', `${process.env.NEWS_API_KEY}`);
 
   const searchUrl = `${baseUrl}?${params.toString()}`;
 
@@ -73,7 +74,6 @@ export async function SearchNews(
 
   const response: NewsApiResponse = await results.json();
   const totalResults = response.totalResults || 0;
-  console.log(totalResults);
   const totalPages = Math.ceil(totalResults / 10);
 
   return { response, totalPages };
