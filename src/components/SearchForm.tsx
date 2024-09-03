@@ -197,7 +197,7 @@ function SearchForm() {
               {searchCriteria.toDate ? (
                 format(searchCriteria.toDate, 'PPP')
               ) : (
-                <span>From date</span>
+                <span>To date</span>
               )}
             </Button>
           </PopoverTrigger>
