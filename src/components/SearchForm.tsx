@@ -18,7 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { ArticleCardSkeleton } from './ArticleCards';
 import { Button } from './ui/button';
@@ -57,24 +57,19 @@ function Submit() {
 function SearchForm() {
   const [state, formAction] = useFormState(SearchNews, undefined);
 
-  const [fromDate, setFromDate] = useState<Date | undefined>(
-    state?.fields ? new Date(state.fields.fromDate) : undefined
-  );
-  const [toDate, setToDate] = useState<Date | undefined>(
-    state?.fields ? new Date(state.fields.toDate) : undefined
-  );
-  const [searchIn, setSearchIn] = useState<string | undefined>(
-    state?.fields ? state.fields.searchIn : undefined
-  );
-  const [language, setLanguage] = useState<string>(
-    state?.fields ? state.fields.languge : 'en'
-  );
-  const [sortBy, setSortBy] = useState<string | undefined>(
-    state?.fields ? state.fields.sortBy : undefined
-  );
-  const [page, setPage] = useState<number>(1); // Add state for page
-  const [totalPages, setTotalPages] = useState(1);
+  const [searchCriteria, setSearchCriteria] = useState({
+    query: state?.fields ? state.fields.query : undefined,
+    fromDate: state?.fields ? new Date(state.fields.fromDate) : undefined,
+    toDate: state?.fields ? new Date(state.fields.toDate) : undefined,
+    searchIn: state?.fields ? state.fields.searchIn : undefined,
+    language: state?.fields ? state.fields.language : 'en',
+    sortBy: state?.fields ? state.fields.sortBy : undefined,
+  });
 
+  const prevSearchCriteria = useRef(searchCriteria);
+
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState(1);
   const { setArticles, setIsMounted } = useArticle();
 
   useEffect(() => {
@@ -95,19 +90,33 @@ function SearchForm() {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     const formData = new FormData();
+    formData.set('query', searchCriteria.query ?? '');
+    formData.set('from', searchCriteria.fromDate?.toISOString() || '');
+    formData.set('to', searchCriteria.toDate?.toISOString() || '');
+    formData.set('searchIn', searchCriteria.searchIn ?? '');
+    formData.set('language', searchCriteria.language ?? '');
+    formData.set('sortBy', searchCriteria.sortBy ?? '');
     formData.set('page', String(newPage));
-    formAction(formData); // Re-submit the form with the new page number
+    formAction(formData);
   };
 
   return (
     <form
       action={(formData) => {
-        formData.set('from', fromDate?.toISOString() || '');
-        formData.set('to', toDate?.toISOString() || '');
-        formData.set('searchIn', searchIn ?? '');
-        formData.set('language', language ?? '');
-        formData.set('sortBy', sortBy ?? '');
-        formData.set('page', page.toString()); // Include page in the form data
+        if (
+          JSON.stringify(prevSearchCriteria.current) !==
+          JSON.stringify(searchCriteria)
+        ) {
+          setPage(1);
+          prevSearchCriteria.current = searchCriteria;
+        }
+        formData.set('query', searchCriteria.query ?? '');
+        formData.set('from', searchCriteria.fromDate?.toISOString() || '');
+        formData.set('to', searchCriteria.toDate?.toISOString() || '');
+        formData.set('searchIn', searchCriteria.searchIn ?? '');
+        formData.set('language', searchCriteria.language ?? '');
+        formData.set('sortBy', searchCriteria.sortBy ?? '');
+        formData.set('page', page.toString());
         formAction(formData);
       }}
       className='grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4 lg:w-1/2 md:w-3/4 sm:w-4/5'
@@ -123,12 +132,18 @@ function SearchForm() {
           id='query'
           name='query'
           type='text'
+          value={searchCriteria.query ?? ''}
+          onChange={(e) =>
+            setSearchCriteria((prev) => ({ ...prev, query: e.target.value }))
+          }
           required
         />
       </div>
       <Select
-        value={searchIn}
-        onValueChange={setSearchIn}
+        value={searchCriteria.searchIn}
+        onValueChange={(value) =>
+          setSearchCriteria((prev) => ({ ...prev, searchIn: value }))
+        }
       >
         <SelectTrigger>
           <SelectValue placeholder='Select where to search' />
@@ -146,19 +161,23 @@ function SearchForm() {
             variant={'outline'}
             className={cn(
               'w-full justify-start text-left font-normal col-span-1',
-              !fromDate && 'text-muted-foreground'
+              !searchCriteria.fromDate && 'text-muted-foreground'
             )}
           >
             <CalendarIcon className='mr-2 h-4 w-4' />
-            {fromDate ? format(fromDate, 'PPP') : <span>From date</span>}
+            {searchCriteria.fromDate ? (
+              format(searchCriteria.fromDate, 'PPP')
+            ) : (
+              <span>From date</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className='w-auto p-0'>
           <Calendar
             mode='single'
-            selected={fromDate}
+            selected={searchCriteria.fromDate}
             onSelect={(date) => {
-              setFromDate(date);
+              setSearchCriteria((prev) => ({ ...prev, fromDate: date }));
             }}
             initialFocus
           />
@@ -171,25 +190,33 @@ function SearchForm() {
             variant={'outline'}
             className={cn(
               'w-full justify-start text-left font-normal',
-              !toDate && 'text-muted-foreground'
+              !searchCriteria.toDate && 'text-muted-foreground'
             )}
           >
             <CalendarIcon className='mr-2 h-4 w-4' />
-            {toDate ? format(toDate, 'PPP') : <span>From date</span>}
+            {searchCriteria.toDate ? (
+              format(searchCriteria.toDate, 'PPP')
+            ) : (
+              <span>From date</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className='w-auto p-0'>
           <Calendar
             mode='single'
-            selected={toDate}
-            onSelect={setToDate}
+            selected={searchCriteria.toDate}
+            onSelect={(date) =>
+              setSearchCriteria((prev) => ({ ...prev, toDate: date }))
+            }
             initialFocus
           />
         </PopoverContent>
       </Popover>
       <Select
-        value={language}
-        onValueChange={setLanguage}
+        value={searchCriteria.language}
+        onValueChange={(value) =>
+          setSearchCriteria((prev) => ({ ...prev, language: value }))
+        }
       >
         <SelectTrigger>
           <SelectValue placeholder='Language' />
@@ -211,8 +238,10 @@ function SearchForm() {
         </SelectContent>
       </Select>
       <Select
-        value={sortBy}
-        onValueChange={setSortBy}
+        value={searchCriteria.sortBy}
+        onValueChange={(value) =>
+          setSearchCriteria((prev) => ({ ...prev, sortBy: value }))
+        }
       >
         <SelectTrigger>
           <SelectValue placeholder='Sort by' />
