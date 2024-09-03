@@ -40,6 +40,7 @@ export async function SearchNews(
     page: data.get('page') ? parseInt(data.get('page') as string, 10) : 1,
   };
 
+  console.log(formData);
   const parsed = searchSchema.safeParse(formData);
 
   if (!parsed.success) {
@@ -76,5 +77,6 @@ export async function SearchNews(
   const totalResults = response.totalResults || 0;
   const totalPages = Math.ceil(totalResults / 10);
 
+  console.log(response);
   return { response, totalPages };
 }
