@@ -37,7 +37,7 @@ export default ArticleCards;
 
 export function ArticleCardSkeleton() {
   return (
-    <div className='flex flex-col gap-2 border border-solid border-primary-foreground rounded-lg w-[80vh] md:w-[80vh] sm:w-[60vh] h-1/4 p-4'>
+    <div className='flex flex-col gap-2 border border-solid border-primary-foreground rounded-lg w-[30vh] md:w-3/4 h-1/4 p-4'>
       <Skeleton className='w-full h-4 rounded-xl' />
       <Skeleton className='w-20 h-4 rounded-xl' />
       <Skeleton className='w-1/6 h-4 rounded-xl' />
@@ -51,7 +51,7 @@ export function ArticleCardSkeleton() {
 
 function ArticleCard({ article }: { article: Articles }) {
   return (
-    <Card className='w-3/4'>
+    <Card className='w-3/5 m-2 md:w-3/4'>
       <CardHeader>
         <CardTitle>{article.title}</CardTitle>
         <p>{article.source.name}</p>
@@ -81,7 +81,7 @@ function ArticleCard({ article }: { article: Articles }) {
       <CardFooter>
         <Link
           href={article.url}
-          className='underline italic'
+          className='underline italic text-wrap text-sm overflow-auto'
         >
           {article.url}
         </Link>

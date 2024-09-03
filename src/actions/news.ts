@@ -66,6 +66,9 @@ export async function SearchNews(
 
   const searchUrl = `${baseUrl}?${params.toString()}`;
 
+  try {
+  } catch (error) {}
+
   const results = await fetch(searchUrl, {
     method: 'GET',
     headers: {
