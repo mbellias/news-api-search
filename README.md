@@ -81,24 +81,6 @@ formData.set('sortBy', searchCriteria.sortBy ?? '');
 formData.set('page', page.toString());
 ```
 
-A ref is used to check if the searchCriteria changed:
-
-```bash
-const prevSearchCriteria = useRef(searchCriteria);
-```
-
-The reason for this check is because if the user goes to a different after submitting the form, and then changes the searchCriteria, the results need to be set back to page 1.
-
-```bash
-if (
-  JSON.stringify(prevSearchCriteria.current) !==
-  JSON.stringify(searchCriteria)
-) {
-  setPage(1);
-  prevSearchCriteria.current = searchCriteria;
-}
-```
-
 ## Pending State and useFormStatus
 
 In order for the pending value that comes from the useFormStatus hook to work, the submit button must be a child of a form element.
@@ -157,6 +139,24 @@ const handlePageChange = (newPage: number) => {
 };
 ```
 
+A ref is used to check if the searchCriteria changed:
+
+```bash
+const prevSearchCriteria = useRef(searchCriteria);
+```
+
+When the form is submitted, the if statement checks to see if the searchCriteria changed. If it did change, the results will be set back to page 1. Otherwise the pageChangeHandler seperately handles which page of the current state of the results are displaying.
+
+```bash
+if (
+  JSON.stringify(prevSearchCriteria.current) !==
+  JSON.stringify(searchCriteria)
+) {
+  setPage(1);
+  prevSearchCriteria.current = searchCriteria;
+}
+```
+
 ## Server Action Setup
 
 Server actions take 2 parameters, prevState and formData. The prevState parameter is an object that contains data pertaining to different states of the form. The formData is the data that was submitted by the user.
@@ -171,6 +171,9 @@ export async function SearchNews(
   /* ... */
 }
 ```
+
+### Form State
+
 ```bash
 export type SearchSchemaState =
   | {
