@@ -39,7 +39,7 @@ function Submit() {
         Search
       </Button>
       {pending && (
-        <div className='w-full mt-20'>
+        <div className='w-screen mt-20'>
           {[1, 2, 3, 4].map((skeleton) => (
             <div
               className='p-2'

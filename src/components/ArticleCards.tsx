@@ -37,7 +37,7 @@ export default ArticleCards;
 
 export function ArticleCardSkeleton() {
   return (
-    <div className='flex flex-col gap-2 border border-solid border-primary-foreground rounded-lg w-[30vh] md:w-3/4 h-1/4 p-4'>
+    <div className='flex flex-col gap-2 border border-solid border-primary-foreground rounded-lg w-3/4 h-1/4 p-4'>
       <Skeleton className='w-full h-4 rounded-xl' />
       <Skeleton className='w-20 h-4 rounded-xl' />
       <Skeleton className='w-1/6 h-4 rounded-xl' />
