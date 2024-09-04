@@ -2,9 +2,23 @@
 
 This is an app that queries the News API's '/everything' endpoint. The form takes the query parameters for the endpoint and submits them to a server action which appends the parameters to the URL and sends the request to the API. The results are then paginated to 10 results per page.
 
+## Boilerplate
+
+```bash
+npx create-next-app@latest
+```
+
 ## shadcn/ui
 
 The UI was created with components from shadcn/ui. All of the UI components are in the '/components/ui' directory.
+
+```bash
+npx shadcn@latest init
+```
+
+## Dark mode
+
+Shadcn/ui also offers dark mode out of the box. The steps in this guide is how I added it: https://ui.shadcn.com/docs/dark-mode/next
 
 ## News API Response Object
 
@@ -41,10 +55,38 @@ export type Articles = {
 'use client'
 ```
 ```bash
-  const [state, formAction] = useFormState(SearchNews, undefined);
+const [state, formAction] = useFormState(SearchNews, undefined);
 ```
 
 The form is handled by the useFormState hook. This hook is used in client-components only. The first parameter is the server action that handles the form data and sends the api request, the second argument is the inital state of the form.
+
+## Form Data
+
+The formAction function is defined to take an argument of type FormData which is a built-in class in Javascript.
+
+```bash
+const formData = new FormData();
+```
+
+An instance of the Form Data is instantiated here, and the set method is used to set the data in the formData object when the form is submitted.
+
+```bash
+const prevSearchCriteria = useRef(searchCriteria);
+```
+
+A ref is used to check if the searchCriteria changed:
+
+```bash
+if (
+  JSON.stringify(prevSearchCriteria.current) !==
+  JSON.stringify(searchCriteria)
+) {
+  setPage(1);
+  prevSearchCriteria.current = searchCriteria;
+}
+```
+
+The reason for this check is because if the user goes to a different after submitting the form, and then changes the searchCriteria, the results need to be set back to page 1.
 
 ## Server Action Setup
 
