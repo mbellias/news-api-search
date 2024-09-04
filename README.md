@@ -2,7 +2,7 @@
 
 This is an app that queries the News API's '/everything' endpoint. The form takes the query parameters for the endpoint and submits them to a server action which appends the parameters to the URL and sends the request to the API. The results are then paginated to 10 results per page.
 
-## Boilerplate
+## Next.js 14 App Router Boilerplate
 
 ```bash
 npx create-next-app@latest
@@ -51,6 +51,9 @@ export type Articles = {
 ```
 
 ## Server Actions and useFormState
+
+The form is handled by the useFormState hook. This hook is used in client-components only. The first parameter is the server action that handles the form data and sends the api request, the second argument is the inital state of the form.
+
 ```bash
 'use client'
 ```
@@ -58,23 +61,33 @@ export type Articles = {
 const [state, formAction] = useFormState(SearchNews, undefined);
 ```
 
-The form is handled by the useFormState hook. This hook is used in client-components only. The first parameter is the server action that handles the form data and sends the api request, the second argument is the inital state of the form.
-
-## Form Data
+## Form Action and Form Data
 
 The formAction function is defined to take an argument of type FormData which is a built-in class in Javascript.
 
 ```bash
-const formData = new FormData();
+const formAction = (payload: FormData) => void
 ```
 
-An instance of the Form Data is instantiated here, and the set method is used to set the data in the formData object when the form is submitted.
+The set method is used to set the data in the formData object when the form is submitted:
+
+```bash
+formData.set('query', searchCriteria.query ?? '');
+formData.set('from', searchCriteria.fromDate?.toISOString() || '');
+formData.set('to', searchCriteria.toDate?.toISOString() || '');
+formData.set('searchIn', searchCriteria.searchIn ?? '');
+formData.set('language', searchCriteria.language ?? '');
+formData.set('sortBy', searchCriteria.sortBy ?? '');
+formData.set('page', page.toString());
+```
+
+A ref is used to check if the searchCriteria changed:
 
 ```bash
 const prevSearchCriteria = useRef(searchCriteria);
 ```
 
-A ref is used to check if the searchCriteria changed:
+The reason for this check is because if the user goes to a different after submitting the form, and then changes the searchCriteria, the results need to be set back to page 1.
 
 ```bash
 if (
@@ -86,7 +99,63 @@ if (
 }
 ```
 
-The reason for this check is because if the user goes to a different after submitting the form, and then changes the searchCriteria, the results need to be set back to page 1.
+## Pending State and useFormStatus
+
+In order for the pending value that comes from the useFormStatus hook to work, the submit button must be a child of a form element.
+
+```bash
+import { useFormStatus } from "react-dom";
+import action from './actions';
+
+function Submit() {
+  const status = useFormStatus();
+  return <button disabled={status.pending}>Submit</button>
+}
+
+export default function App() {
+  return (
+    <form action={action}>
+      <Submit />
+    </form>
+  );
+}
+```
+
+https://react.dev/reference/react-dom/hooks/useFormStatus
+
+## Pagination
+
+The News API endpoint that's being queried takes the parameters 'page' and 'pageSize':
+
+```
+pageSize
+int
+The number of results to return per page.
+Default: 100. Maximum: 100.
+
+page
+int
+Use this to page through the results.
+Default: 1.
+```
+https://newsapi.org/docs/endpoints/everything
+
+The pageChange handler uses the setPage state action to update the page and instantiates a FormData object and then sets the searchCriteria state and the new page number in the object and calls formAction:
+
+```bash
+const handlePageChange = (newPage: number) => {
+  setPage(newPage);
+  const formData = new FormData();
+  formData.set('query', searchCriteria.query ?? '');
+  formData.set('from', searchCriteria.fromDate?.toISOString() || '');
+  formData.set('to', searchCriteria.toDate?.toISOString() || '');
+  formData.set('searchIn', searchCriteria.searchIn ?? '');
+  formData.set('language', searchCriteria.language ?? '');
+  formData.set('sortBy', searchCriteria.sortBy ?? '');
+  formData.set('page', String(newPage));
+  formAction(formData);
+};
+```
 
 ## Server Action Setup
 
