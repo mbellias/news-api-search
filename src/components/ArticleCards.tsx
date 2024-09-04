@@ -51,7 +51,7 @@ export function ArticleCardSkeleton() {
 
 function ArticleCard({ article }: { article: Articles }) {
   return (
-    <Card className='w-3/5 m-2 md:w-3/4'>
+    <Card className='w-4/5 m-2 md:w-3/4'>
       <CardHeader>
         <CardTitle>{article.title}</CardTitle>
         <p>{article.source.name}</p>
